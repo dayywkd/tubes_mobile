@@ -1,0 +1,48 @@
+name: toko_kopi_sembilan
+description: A mobile ordering app for Toko Kopi Sembilan
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # STATE MANAGEMENT
+  provider: ^6.0.5
+
+  # API HTTP REQUEST
+  http: ^0.13.6
+
+  # QR SCANNER
+  mobile_scanner: ^3.4.1
+
+  # SUPABASE BACKEND
+  supabase_flutter: ^2.10.3
+
+  # SHIMMER LOADING
+  shimmer: ^2.0.0
+
+  # FORMATTING
+  intl: ^0.18.1
+
+  # ICONS
+  cupertino_icons: ^1.0.6
+
+  # PREMIUM FONT SUPPORT
+  google_fonts: ^4.0.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/
+    - assets/kopi.png
