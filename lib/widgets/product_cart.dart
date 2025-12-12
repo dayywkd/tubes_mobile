@@ -1,3 +1,4 @@
+// lib/widgets/product_cart.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/product.dart';
@@ -12,58 +13,94 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context, listen: false);
+
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ProductDetailScreen(product: product),
-        ),
-      ),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ProductDetailScreen(product: product),
+          ),
+        );
+      },
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
-            BoxShadow(color: Colors.black12, blurRadius: 4),
+            BoxShadow(
+                color: Colors.black12.withOpacity(0.08),
+                blurRadius: 6,
+                offset: const Offset(0, 2)),
           ],
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.brown.shade100,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-                ),
-                child: const Icon(Icons.local_cafe, size: 60, color: AppTheme.primary),
+            Hero(
+              tag: "product-image-${product.id}",
+              child: ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(16)),
+                child: product.imageUrl.startsWith("assets/")
+                    ? Image.asset(
+                        product.imageUrl, // Menggunakan Image.asset untuk path lokal
+                        height: 130,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      )
+                    : Image.network(
+                        product.imageUrl, // Menggunakan Image.network untuk URL
+                        height: 130,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
               ),
             ),
+
+            // CONTENT
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(product.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  Text("IDR ${product.price.toInt()}"),
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        cart.add(product);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("${product.name} ditambahkan")),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primary,
-                        minimumSize: const Size(40, 40),
-                        shape: const CircleBorder(),
+                  Text(product.name,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 15)),
+                  const SizedBox(height: 4),
+                  Text(product.subtitle,
+                      style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "IDR ${product.price.toInt()}",
+                        style: const TextStyle(
+                            color: AppTheme.primary,
+                            fontWeight: FontWeight.bold),
                       ),
-                      child: const Icon(Icons.add),
-                    ),
-                  )
+                      GestureDetector(
+                        onTap: () {
+                          // Logika TAMBAH KE KERANJANG
+                          cart.add(product, size: "M");
+
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text("${product.name} ditambahkan ke keranjang"),
+                            duration: const Duration(seconds: 1),
+                          ));
+                        },
+                        child: const CircleAvatar(
+                          radius: 16,
+                          backgroundColor: AppTheme.primary,
+                          child: Icon(Icons.add, color: Colors.white),
+                        ),
+                      )
+                    ],
+                  ),
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),

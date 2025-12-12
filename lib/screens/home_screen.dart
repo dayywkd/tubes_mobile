@@ -1,3 +1,4 @@
+// lib/screens/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
@@ -20,16 +21,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final categories = [
     "All Coffee",
-    "Machiatto",
+    "Mocha",
     "Latte",
     "Americano",
     "Flat White",
+    "Espresso",
   ];
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
+    Future.delayed(Duration.zero, () {
       Provider.of<ProductProvider>(context, listen: false).loadProducts();
     });
   }
@@ -47,13 +49,13 @@ class _HomeScreenState extends State<HomeScreen> {
             case 0:
               break; // Home
             case 1:
-              Navigator.pushNamed(context, "/favorite");
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Menu Favorite belum tersedia")));
               break;
             case 2:
-              Navigator.pushNamed(context, "/notifications");
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Menu Notifikasi belum tersedia")));
               break;
             case 3:
-              Navigator.pushNamed(context, "/profile");
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Menu Profile belum tersedia")));
               break;
             case 4:
               Navigator.pushNamed(context, "/cart");
@@ -64,9 +66,9 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            _buildTopSection(),
+            _buildTopSection(context),
             const SizedBox(height: 20),
-            _buildPromoCard(),
+            _buildPromoCard(context),
             const SizedBox(height: 16),
             _buildCategoryChips(),
             const SizedBox(height: 12),
@@ -82,21 +84,22 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // -------------------- TOP SECTION --------------------
-  Widget _buildTopSection() {
+  Widget _buildTopSection(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      // Responsive padding
+      padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.05, vertical: 12), 
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [Color(0xFF232526), Color(0xFF414345)],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)), // Radius lebih besar
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // LOCATION HEADER
+          // LOCATION HEADER (Dibuat lebih rapi)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -113,24 +116,30 @@ class _HomeScreenState extends State<HomeScreen> {
                           fontSize: 16)),
                 ],
               ),
-              const Text("SEMBILAN",
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold)),
+              // Ikon logo di pojok kanan
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.local_cafe, color: Colors.white, size: 24),
+              ),
             ],
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
 
-          // SEARCH BAR
+          // SEARCH BAR (Dibuat lebih modern)
           Row(
             children: [
               Expanded(
                 child: Container(
-                  height: 48,
+                  height: 50,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(14),
+                    color: Colors.white.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
                     children: [
@@ -156,32 +165,37 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(width: 12),
               Container(
-                width: 48,
-                height: 48,
+                width: 50,
+                height: 50,
                 decoration: BoxDecoration(
                   color: AppTheme.primary,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(Icons.tune, color: Colors.white),
               ),
             ],
-          )
+          ),
+          const SizedBox(height: 10),
         ],
       ),
     );
   }
 
   // -------------------- PROMO CARD --------------------
-  Widget _buildPromoCard() {
+  Widget _buildPromoCard(BuildContext context) {
+    // Menggunakan perbandingan rasio layar untuk responsif
+    final width = MediaQuery.of(context).size.width - 40; 
+    final height = width / 3;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
-        height: 130,
+        height: height,
         decoration: BoxDecoration(
           color: const Color(0xFFB86F44),
           borderRadius: BorderRadius.circular(18),
           image: const DecorationImage(
-            image: AssetImage("assets/kopi.png"),
+            image: AssetImage("assets/kopi.png"), 
             fit: BoxFit.cover,
             opacity: 0.35,
           ),
@@ -189,8 +203,8 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Stack(
           children: [
             Positioned(
-              left: 12,
-              top: 12,
+              left: 16,
+              top: 16,
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -204,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const Positioned(
-              left: 12,
+              left: 16,
               bottom: 20,
               child: Text(
                 "Buy one get\none FREE",
@@ -212,6 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: Colors.white,
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
+                  shadows: [BoxShadow(color: Colors.black45, blurRadius: 4)],
                   height: 1.1,
                 ),
               ),
@@ -284,6 +299,12 @@ class _HomeScreenState extends State<HomeScreen> {
           p.subtitle.toLowerCase().contains(q) ||
           p.category.toLowerCase().contains(q);
     }).toList();
+    
+    if (items.isEmpty && !provider.isLoading) {
+       return const Center(
+          child: Text("Tidak ada produk ditemukan", style: TextStyle(color: Colors.grey)),
+        );
+    }
 
     return GridView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -295,31 +316,6 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisSpacing: 16,
       ),
       itemBuilder: (context, i) => ProductCard(product: items[i]),
-    );
-  }
-
-  // -------------------- BOTTOM NAV --------------------
-  Widget _buildBottomNav() {
-    return Container(
-      height: 85,
-      padding: const EdgeInsets.only(bottom: 20, top: 12),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black12, blurRadius: 10, offset: Offset(0, -2)),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: const [
-          Icon(Icons.home, color: AppTheme.primary, size: 28),
-          Icon(Icons.favorite_border, color: Colors.grey, size: 26),
-          Icon(Icons.notifications_outlined, color: Colors.grey, size: 26),
-          Icon(Icons.person_outline, color: Colors.grey, size: 26),
-        ],
-      ),
     );
   }
 }
