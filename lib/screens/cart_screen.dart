@@ -93,6 +93,7 @@ class CartScreen extends StatelessWidget {
                             // IMAGE
                             ClipRRect(
                               borderRadius: BorderRadius.circular(12),
+                              // Catatan: Asumsi image_url adalah network URL dari Supabase
                               child: Image.network(
                                 item.product.imageUrl,
                                 width: 60,
@@ -114,7 +115,8 @@ class CartScreen extends StatelessWidget {
                                   Text("Size: ${item.size}", 
                                       style: const TextStyle(color: Colors.grey)),
                                   const SizedBox(height: 4),
-                                  Text("IDR ${(item.product.price * item.qty).toInt()}", 
+                                  // PERBAIKAN: Menggunakan item.price (harga unit yang disesuaikan)
+                                  Text("IDR ${(item.price * item.qty).toInt()}", 
                                       style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           color: AppTheme.primary)),
@@ -166,6 +168,7 @@ class CartScreen extends StatelessWidget {
                     const Text("Total",
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold)),
+                    // PERBAIKAN: cart.total kini sudah menghitung dari harga yang disesuaikan
                     Text("IDR ${cart.total.toInt()}",
                         style: const TextStyle(
                             fontSize: 18,

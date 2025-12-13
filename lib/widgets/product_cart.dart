@@ -83,7 +83,12 @@ class ProductCard extends StatelessWidget {
                       GestureDetector(
                         onTap: () {
                           // Logika TAMBAH KE KERANJANG
-                          cart.add(product, size: "M");
+                          cart.add(
+                            product, 
+                            size: "M",
+                            // PERBAIKAN: Menyediakan calculatedPrice = harga dasar (untuk ukuran M)
+                            calculatedPrice: product.price 
+                          );
 
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             content: Text("${product.name} ditambahkan ke keranjang"),

@@ -1,6 +1,9 @@
 // lib/screens/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart'; // IMPORT BARU UNTUK NAMA LOKASI
+
 import '../config/theme.dart';
 import '../providers/product_provider.dart';
 import '../widgets/product_cart.dart';
@@ -18,6 +21,11 @@ class _HomeScreenState extends State<HomeScreen> {
   String selectedCategory = "All Coffee";
   TextEditingController searchCtrl = TextEditingController();
   String searchQuery = "";
+  
+  // Default text saat loading
+  String _currentLocation = "Mencari Lokasi..."; 
+  
+  int _selectedIndex = 0; 
 
   final categories = [
     "All Coffee",
@@ -31,9 +39,123 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    
+    final productProvider = Provider.of<ProductProvider>(context, listen: false);
+
     Future.delayed(Duration.zero, () {
-      Provider.of<ProductProvider>(context, listen: false).loadProducts();
+      productProvider.loadProducts();
+      _determinePosition(); // Panggil fungsi lokasi saat mulai
     });
+  }
+
+  // --- FUNGSI LOKASI DIPERBARUI (REVERSE GEOCODING) ---
+  Future<void> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // 1. Cek Service GPS
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if(mounted) setState(() => _currentLocation = "GPS Mati");
+      return;
+    }
+
+    // 2. Cek Izin
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        if(mounted) setState(() => _currentLocation = "Izin Lokasi Ditolak");
+        return;
+      }
+    }
+    
+    if (permission == LocationPermission.deniedForever) {
+      if(mounted) setState(() => _currentLocation = "Izin Ditolak Permanen");
+      return;
+    } 
+
+    try {
+      // 3. Ambil Koordinat
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high
+      );
+
+      // 4. UBAH KOORDINAT JADI ALAMAT (GEOCODING)
+      try {
+        List<Placemark> placemarks = await placemarkFromCoordinates(
+          position.latitude, 
+          position.longitude
+        );
+
+        if (placemarks.isNotEmpty) {
+          Placemark place = placemarks[0];
+          
+          // Anda bisa memilih field lain: locality, subLocality, thoroughfare, dll.
+          // subLocality = Kecamatan/Kelurahan
+          // locality = Kota/Kabupaten
+          // administrativeArea = Provinsi
+          
+          String locationName = "${place.subLocality ?? ''}, ${place.locality ?? ''}";
+          
+          // Jika kosong, coba ambil administrative area
+          if (locationName.trim() == ",") {
+             locationName = place.administrativeArea ?? "Lokasi Tidak Diketahui";
+          }
+          
+          // Hapus koma di awal jika subLocality kosong
+          if (locationName.startsWith(",")) {
+            locationName = locationName.substring(1).trim();
+          }
+
+          if(mounted) {
+            setState(() {
+              _currentLocation = locationName;
+            });
+          }
+        } else {
+           if(mounted) setState(() => _currentLocation = "Alamat tidak ditemukan");
+        }
+      } catch (e) {
+        // Jika gagal ubah ke alamat (misal tidak ada internet), tampilkan koordinat saja
+        if(mounted) {
+          setState(() {
+             _currentLocation = "${position.latitude.toStringAsFixed(2)}, ${position.longitude.toStringAsFixed(2)}";
+          });
+        }
+      }
+
+    } catch (e) {
+      if(mounted) setState(() => _currentLocation = "Gagal memuat lokasi");
+      print("Geolocation Error: $e");
+    }
+  }
+  
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    switch (index) {
+      case 0: // Home
+        break; 
+      case 1: 
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Menu Favorite belum tersedia")));
+        break;
+      case 2: 
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Menu Notifikasi belum tersedia")));
+        break;
+      case 3: // PROFILE
+        Navigator.pushNamed(context, "/profile").then((_) {
+          if (mounted) setState(() => _selectedIndex = 0); 
+        });
+        break;
+      case 4: // CART
+        Navigator.pushNamed(context, "/cart").then((_) {
+          if (mounted) setState(() => _selectedIndex = 0); 
+        });
+        break;
+    }
   }
 
   @override
@@ -42,40 +164,38 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F2EE),
+      
       bottomNavigationBar: BottomNav(
-        currentIndex: 0,
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              break; // Home
-            case 1:
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Menu Favorite belum tersedia")));
-              break;
-            case 2:
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Menu Notifikasi belum tersedia")));
-              break;
-            case 3:
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Menu Profile belum tersedia")));
-              break;
-            case 4:
-              Navigator.pushNamed(context, "/cart");
-              break;
-          }
-        },
+        currentIndex: _selectedIndex, 
+        onTap: _onItemTapped,        
       ),
+      
       body: SafeArea(
         child: Column(
           children: [
             _buildTopSection(context),
             const SizedBox(height: 20),
-            _buildPromoCard(context),
-            const SizedBox(height: 16),
-            _buildCategoryChips(),
-            const SizedBox(height: 12),
             Expanded(
-              child: productProvider.isLoading
-                  ? _buildSkeletonGrid() 
-                  : _buildProductGrid(productProvider),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    _buildPromoCard(context),
+                    const SizedBox(height: 16),
+                    _buildCategoryChips(),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      // Agar GridView tidak error di dalam SingleChildScrollView
+                      // Kita pakai shrinkWrap atau beri tinggi fix. 
+                      // Di sini saya pakai logic provider.isLoading untuk content
+                      height: 500, // Estimasi tinggi, atau gunakan shrinkWrap: true di GridView
+                      child: productProvider.isLoading
+                          ? _buildSkeletonGrid() 
+                          : _buildProductGrid(productProvider),
+                    ),
+                    const SizedBox(height: 80), // Space untuk bottom nav
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -86,7 +206,6 @@ class _HomeScreenState extends State<HomeScreen> {
   // -------------------- TOP SECTION --------------------
   Widget _buildTopSection(BuildContext context) {
     return Container(
-      // Responsive padding
       padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.05, vertical: 12), 
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -94,30 +213,45 @@ class _HomeScreenState extends State<HomeScreen> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)), // Radius lebih besar
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // LOCATION HEADER (Dibuat lebih rapi)
+          // LOCATION HEADER 
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text("Location",
-                      style: TextStyle(color: Colors.white70, fontSize: 12)),
-                  SizedBox(height: 4),
-                  Text("Tuban, Jawa Timur",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16)),
-                ],
+              Expanded( // Gunakan Expanded agar teks panjang tidak overflow
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Location",
+                        style: TextStyle(color: Colors.white70, fontSize: 12)),
+                    const SizedBox(height: 4),
+                    // LOKASI (ICON + TEXT)
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on, color: AppTheme.primary, size: 16),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            _currentLocation, // TAMPILKAN NAMA LOKASI DI SINI
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14)), // Sesuaikan font size agar muat
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
               // Ikon logo di pojok kanan
               Container(
+                margin: const EdgeInsets.only(left: 10),
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: AppTheme.primary,
@@ -130,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: 20),
 
-          // SEARCH BAR (Dibuat lebih modern)
+          // SEARCH BAR 
           Row(
             children: [
               Expanded(
@@ -183,7 +317,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // -------------------- PROMO CARD --------------------
   Widget _buildPromoCard(BuildContext context) {
-    // Menggunakan perbandingan rasio layar untuk responsif
     final width = MediaQuery.of(context).size.width - 40; 
     final height = width / 3;
 
@@ -194,6 +327,7 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: BoxDecoration(
           color: const Color(0xFFB86F44),
           borderRadius: BorderRadius.circular(18),
+          // Pastikan gambar aset ini ada
           image: const DecorationImage(
             image: AssetImage("assets/kopi.png"), 
             fit: BoxFit.cover,
@@ -274,6 +408,8 @@ class _HomeScreenState extends State<HomeScreen> {
   // -------------------- SKELETON GRID --------------------
   Widget _buildSkeletonGrid() {
     return GridView.builder(
+      physics: const NeverScrollableScrollPhysics(), // Scroll diurus parent
+      shrinkWrap: true, // Agar fit content
       padding: const EdgeInsets.symmetric(horizontal: 20),
       itemCount: 6,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -301,12 +437,17 @@ class _HomeScreenState extends State<HomeScreen> {
     }).toList();
     
     if (items.isEmpty && !provider.isLoading) {
-       return const Center(
-          child: Text("Tidak ada produk ditemukan", style: TextStyle(color: Colors.grey)),
-        );
+       return const Padding(
+         padding: EdgeInsets.all(20.0),
+         child: Center(
+            child: Text("Tidak ada produk ditemukan", style: TextStyle(color: Colors.grey)),
+          ),
+       );
     }
 
     return GridView.builder(
+      physics: const NeverScrollableScrollPhysics(), // Scroll diurus parent
+      shrinkWrap: true, // Agar fit content
       padding: const EdgeInsets.symmetric(horizontal: 20),
       itemCount: items.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

@@ -16,15 +16,31 @@ class ProductDetailScreen extends StatefulWidget {
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   String selectedSize = "M";
 
+  // FUNGSI UNTUK MENGHITUNG HARGA BERDASARKAN UKURAN
+  double _calculatePrice(String size, double basePrice) {
+    switch (size) {
+      case "S":
+        return basePrice - 1000.0;
+      case "L":
+        return basePrice + 2000.0;
+      case "M":
+      default:
+        return basePrice;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
     final cart = Provider.of<CartProvider>(context, listen: false);
+    
+    // Hitung harga yang ditampilkan berdasarkan state ukuran
+    final currentPrice = _calculatePrice(selectedSize, product.price);
 
     return Scaffold(
       backgroundColor: Colors.white,
 
-      bottomNavigationBar: _buildBottomBuyBar(product, cart),
+      bottomNavigationBar: _buildBottomBuyBar(product, cart, currentPrice),
 
       // SCROLLABLE BODY
       body: SafeArea(
@@ -128,7 +144,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   // FIXED BOTTOM BUTTON
-  Widget _buildBottomBuyBar(Product product, CartProvider cart) {
+  // Menerima harga yang dihitung
+  Widget _buildBottomBuyBar(Product product, CartProvider cart, double finalPrice) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
       decoration: const BoxDecoration(
@@ -147,7 +164,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             children: [
               const Text("Price", style: TextStyle(color: Colors.grey)),
               Text(
-                "IDR ${product.price.toInt()}",
+                "IDR ${finalPrice.toInt()}", // TAMPILKAN HARGA YANG DIHITUNG
                 style: const TextStyle(
                     color: AppTheme.primary,
                     fontSize: 18,
@@ -164,7 +181,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   borderRadius: BorderRadius.circular(14)),
             ),
             onPressed: () {
-              cart.add(product, size: selectedSize);
+              // KIRIM HARGA YANG DIHITUNG KE CART
+              cart.add(
+                product, 
+                size: selectedSize, 
+                calculatedPrice: finalPrice
+              ); 
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                     content: Text(

@@ -17,8 +17,6 @@ dependencies:
   # API HTTP REQUEST
   http: ^0.13.6
 
-  # QR SCANNER
-  mobile_scanner: ^3.4.1
 
   # SUPABASE BACKEND
   supabase_flutter: ^2.10.3
@@ -34,6 +32,9 @@ dependencies:
 
   # PREMIUM FONT SUPPORT
   google_fonts: ^4.0.4
+
+  geolocator: ^12.0.0
+  geocoding: ^3.0.0
 
 dev_dependencies:
   flutter_test:

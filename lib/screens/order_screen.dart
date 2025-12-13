@@ -5,7 +5,7 @@ import '../config/theme.dart';
 import '../providers/cart_provider.dart';
 import '../services/order_service.dart';
 import 'package:toko_kopi_sembilan/screens/payment_succes_screen.dart';
-import 'qr_scan_screen.dart'; // Import QR scanner
+// import 'qr_scan_screen.dart'; // Tidak diperlukan lagi
 
 class OrderScreen extends StatefulWidget {
   const OrderScreen({super.key});
@@ -22,7 +22,11 @@ class _OrderScreenState extends State<OrderScreen> {
 
     // Redirect jika keranjang kosong
     if (cart.items.isEmpty) {
-      Future.microtask(() => Navigator.pop(context));
+      if (mounted) {
+        // Logika pengalihan yang lebih aman dan langsung
+        Future.microtask(() => Navigator.pop(context));
+      }
+      // Tampilan placeholder untuk mencegah error saat pengalihan terjadi
       return const Scaffold(body: Center(child: Text("Keranjang kosong. Mengarahkan...")));
     }
     
@@ -55,12 +59,12 @@ class _OrderScreenState extends State<OrderScreen> {
           children: [
             const SizedBox(height: 12),
 
-            // ---------- TABLE ID / QR SCANNER ----------
-            _tableIdSection(context, cart),
+            // ---------- CASHIER INFO BOX (Pengganti QR SCAN) ----------
+            _cashierInfoBox(context),
 
             const SizedBox(height: 20),
 
-            // ---------- TOP BUTTONS (Diperbarui dengan fungsi onTap) ----------
+            // ---------- TOP BUTTONS ----------
             Row(
               children: [
                 _topButton(icon: Icons.edit, label: "Edit Order", onTap: () => Navigator.pop(context)),
@@ -83,7 +87,7 @@ class _OrderScreenState extends State<OrderScreen> {
             ),
             const SizedBox(height: 10),
             ...cart.items.map((item) {
-              return _orderItem(context, item);
+              return _orderItem(item);
             }).toList(),
 
             const SizedBox(height: 20),
@@ -123,13 +127,13 @@ class _OrderScreenState extends State<OrderScreen> {
 
             const SizedBox(height: 10),
 
-            _summaryRow("Total Harga Barang", "IDR ${totalHarga.toInt()}"),
-            _summaryRow("Pajak (10%)", "IDR ${tax.toInt()}"),
-            _summaryRow("Diskon", "- IDR ${discount.toInt()}", isDiscount: true),
+            _summaryRow("Total Harga Barang", totalHarga.toInt()),
+            _summaryRow("Pajak (10%)", tax.toInt()),
+            _summaryRow("Diskon", -discount.toInt(), isDiscount: true),
 
             const Divider(height: 20),
             
-            _summaryRow("Total Pembayaran", "IDR ${totalBayar.toInt()}", isTotal: true),
+            _summaryRow("Total Pembayaran", totalBayar.toInt(), isTotal: true),
 
             const SizedBox(height: 20),
 
@@ -170,19 +174,37 @@ class _OrderScreenState extends State<OrderScreen> {
               width: double.infinity,
               height: 55,
               child: ElevatedButton(
-                // Nonaktifkan tombol jika tableId null
-                onPressed: cart.tableId == null ? null : () async {
+                // Tombol selalu aktif
+                onPressed: () async {
                   
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Mengirim pesanan...")),
                   );
                   
                   final success = await OrderService.sendOrder(
-                    tableId: cart.tableId ?? "unknown",
+                    tableId: "CASHIER-ORDER",
                     items: cart.items,
                   );
 
                   if (success) {
+                    
+                    // TAMPILKAN POP-UP NOTIFIKASI SUKSES
+                    await showDialog(
+                      context: context,
+                      barrierDismissible: false, 
+                      builder: (context) => AlertDialog(
+                        title: const Text("Pesanan Terkirim!"),
+                        content: const Text("Pesanan Anda telah berhasil dicatat. Lanjutkan ke proses pembayaran di kasir."),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context), 
+                            child: const Text("OK", style: TextStyle(color: AppTheme.primary)),
+                          ),
+                        ],
+                      ),
+                    );
+                    
+                    // Navigasi ke layar sukses
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
@@ -191,20 +213,44 @@ class _OrderScreenState extends State<OrderScreen> {
                     );
                     cart.clear();
                   } else {
-                     ScaffoldMessenger.of(context).showSnackBar(
+                    // TAMPILKAN POP-UP NOTIFIKASI GAGAL
+                    await showDialog(
+                        context: context,
+                        barrierDismissible: true,
+                        builder: (context) => AlertDialog(
+                          title: Row(
+                            children: const [
+                              Icon(Icons.error_outline, color: Colors.red),
+                              SizedBox(width: 8),
+                              Text("Pengiriman Gagal!"),
+                            ],
+                          ),
+                          content: const Text(
+                            "Pesanan gagal dikirim. Silakan periksa koneksi atau coba lagi.",
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text("TUTUP", style: TextStyle(color: Colors.red)),
+                            ),
+                          ],
+                        ),
+                      );
+
+                    ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("Gagal mengirim pesanan. Silakan coba lagi.")),
                     );
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: cart.tableId == null ? Colors.grey : AppTheme.primary,
+                  backgroundColor: AppTheme.primary, 
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: Text(
-                  cart.tableId == null ? "Scan QR Meja Dulu" : "Pesan Sekarang",
-                  style: const TextStyle(
+                child: const Text(
+                  "Pesan & Bayar di Kasir",
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -221,56 +267,32 @@ class _OrderScreenState extends State<OrderScreen> {
   }
 
   // ================= WIDGETS =================
-
-  Widget _tableIdSection(BuildContext context, CartProvider cart) {
+  
+  // Widget Info Box Kasir (Pengganti _tableIdSection)
+  Widget _cashierInfoBox(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cart.tableId == null ? Colors.red.shade200 : AppTheme.primary),
+        border: Border.all(color: AppTheme.primary),
         boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
       ),
       child: Row(
-        children: [
-          Icon(Icons.qr_code_scanner, color: cart.tableId == null ? Colors.red : AppTheme.primary),
-          const SizedBox(width: 12),
+        children: const [
+          Icon(Icons.point_of_sale, color: AppTheme.primary),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Nomor Meja Anda", style: TextStyle(fontWeight: FontWeight.bold)),
+                Text("Mode Pemesanan", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                 Text(
-                  cart.tableId ?? "Wajib Scan QR Meja",
-                  style: TextStyle(color: cart.tableId == null ? Colors.red : Colors.black87),
+                  "Pesanan dicatat di Kasir. ID Pesanan: CASHIER-ORDER",
+                  style: TextStyle(color: Colors.black54, fontSize: 13),
                 ),
               ],
             ),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              // Navigasi ke QRScanScreen
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const QRScanScreen()),
-              );
-              if (result != null && result is String && result.isNotEmpty) {
-                // Set table ID di CartProvider
-                cart.setTable(result);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Meja $result berhasil teridentifikasi")),
-                );
-              } else if (result == null) {
-                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Scan dibatalkan.")),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            child: Text(cart.tableId == null ? "Scan QR" : "Ubah"),
           ),
         ],
       ),
@@ -306,8 +328,10 @@ class _OrderScreenState extends State<OrderScreen> {
     );
   }
 
-  Widget _orderItem(BuildContext context, item) {
-    // ... (rest of _orderItem logic)
+  // Perbaikan: Menggunakan URL Gambar produk yang sebenarnya
+  Widget _orderItem(item) {
+    final isLocalAsset = item.product.imageUrl.startsWith("assets/");
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(14),
@@ -321,12 +345,19 @@ class _OrderScreenState extends State<OrderScreen> {
           // Image
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.asset(
-              "assets/kopi.png",
-              width: 60,
-              height: 60,
-              fit: BoxFit.cover,
-            ),
+            child: isLocalAsset
+                ? Image.asset(
+                    item.product.imageUrl,
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                  )
+                : Image.network(
+                    item.product.imageUrl,
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                  ),
           ),
 
           const SizedBox(width: 12),
@@ -336,18 +367,20 @@ class _OrderScreenState extends State<OrderScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("${item.qty}x ${item.product.name}", // Menampilkan QTY di nama
+                Text("${item.qty}x ${item.product.name}",
                     style: const TextStyle(
                         fontWeight: FontWeight.bold, fontSize: 16)),
-                Text("Size: ${item.size} - IDR ${item.product.price.toInt()}",
+                // Menggunakan item.price (harga unit yang disesuaikan)
+                Text("Size: ${item.size} - IDR ${item.price.toInt()}", 
                     style: const TextStyle(color: Colors.grey, fontSize: 13)),
               ],
             ),
           ),
           
           // Total price for item
+          // Menggunakan item.price
           Text(
-            "IDR ${(item.product.price * item.qty).toInt()}",
+            "IDR ${(item.price * item.qty).toInt()}", 
             style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: AppTheme.primary,
@@ -359,7 +392,7 @@ class _OrderScreenState extends State<OrderScreen> {
   }
 
 
-  Widget _summaryRow(String label, String value, {bool isDiscount = false, bool isTotal = false}) {
+  Widget _summaryRow(String label, int value, {bool isDiscount = false, bool isTotal = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -372,7 +405,7 @@ class _OrderScreenState extends State<OrderScreen> {
                 fontWeight: isTotal ? FontWeight.bold : FontWeight.normal
               )),
           Text(
-            value,
+            "IDR $value",
             style: TextStyle(
                 fontSize: isTotal ? 17 : 15,
                 fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,

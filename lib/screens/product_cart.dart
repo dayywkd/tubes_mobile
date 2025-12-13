@@ -1,3 +1,4 @@
+// lib/screens/product_cart.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/product.dart';
@@ -81,7 +82,12 @@ class ProductCard extends StatelessWidget {
                       ),
                       GestureDetector(
                         onTap: () {
-                          cart.add(product, size: "M");
+                          // PERBAIKAN: Menyediakan calculatedPrice
+                          cart.add(
+                            product, 
+                            size: "M",
+                            calculatedPrice: product.price // Menggunakan harga dasar untuk ukuran 'M'
+                          );
 
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             content: Text("${product.name} added to cart"),

@@ -1,6 +1,6 @@
+// lib/screens/onboard_screen.dart
 import 'package:flutter/material.dart';
 import '../config/theme.dart';
-import 'home_screen.dart';
 
 class OnboardScreen extends StatelessWidget {
   const OnboardScreen({super.key});
@@ -12,8 +12,6 @@ class OnboardScreen extends StatelessWidget {
         children: [
           // Background Image
           Container(
-            width: double.infinity,
-            height: double.infinity,
             decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage("assets/kopi.png"),
@@ -22,79 +20,81 @@ class OnboardScreen extends StatelessWidget {
             ),
           ),
 
-          // Overlay warna hitam transparan
+          // Dark Overlay
           Container(
-            width: double.infinity,
-            height: double.infinity,
-            color: Colors.black.withOpacity(0.45),
+            color: Colors.black.withOpacity(0.6),
           ),
 
           // Content
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  const Spacer(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  "Discover the Finest Coffee",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  "Taste the real flavor of every sip you take. Get your coffee now!",
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 40),
 
-                  // Title
-                  const Text(
-                    "The One and Only\nCoffee in The Town",
-                    textAlign: TextAlign.center,
+                // SIGN UP Button (Login/Auth Success Action)
+                ElevatedButton(
+                  onPressed: () {
+                    // --- PERINTAH NAVIGASI UTAMA ---
+                    // Mengganti halaman saat ini (Onboard) dengan HomeScreen (/home)
+                    Navigator.pushReplacementNamed(context, '/home');
+                    // --------------------------------
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Text(
+                    "Sign Up",
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 32,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      height: 1.2,
+                      color: Colors.white,
                     ),
                   ),
+                ),
+                const SizedBox(height: 16),
 
-                  const SizedBox(height: 16),
-
-                  // Subtitle
-                  const Text(
-                    "Internationally Certified Barista (SCA)\nTuban Speciality Coffee",
-                    textAlign: TextAlign.center,
+                // Sign In Button
+                TextButton(
+                  onPressed: () {
+                    // Asumsi: Tombol Sign In juga mengarah ke Home setelah sukses
+                    Navigator.pushReplacementNamed(context, '/home');
+                  },
+                  child: Text(
+                    "Sign In",
                     style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
+                      color: AppTheme.primary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-
-                  const SizedBox(height: 40),
-
-                  // Get Started Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 55,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (_) => const HomeScreen()),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      child: const Text(
-                        "Get Started",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-                ],
-              ),
+                ),
+                const SizedBox(height: 40),
+              ],
             ),
           ),
         ],

@@ -21,10 +21,10 @@ class Product {
   factory Product.fromJson(Map<String, dynamic> json) {
     String url = json["image_url"]?.toString() ?? "";
 
-    // Jika hanya file name, jadikan public URL storage
+    // Logika untuk mengubah nama file menjadi URL publik Supabase
     if (url.isNotEmpty && !url.startsWith("http")) {
       url = Supabase.instance.client.storage
-          .from('coffe_images')
+          .from('coffe_images') // [Periksa: Pastikan nama bucket ini sudah benar!]
           .getPublicUrl(url);
     }
 
