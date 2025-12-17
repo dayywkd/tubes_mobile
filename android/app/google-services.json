@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "241891833656",
+    "project_id": "tubes-b25a6",
+    "storage_bucket": "tubes-b25a6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:241891833656:android:a3c08983bce08d61b573cd",
+        "android_client_info": {
+          "package_name": "com.example.aplikasi_cafe"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8VgI5E6bBtAJs2KInrMXwXdSAlDmB40s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:241891833656:android:a19b0f28f8dd4161b573cd",
+        "android_client_info": {
+          "package_name": "com.kopisembilan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8VgI5E6bBtAJs2KInrMXwXdSAlDmB40s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
