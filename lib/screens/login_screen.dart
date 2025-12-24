@@ -1,9 +1,6 @@
-// lib/screens/login_screen.dart
-
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../config/theme.dart';
-import '../main.dart'; // Mengakses client Supabase global
+import '../../config/theme.dart';
+import '../../controllers/login_controller.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,53 +12,29 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
+  late LoginController controller;
   bool _isLoading = false;
+
+  void _setLoading(bool value) {
+    setState(() => _isLoading = value);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    controller = LoginController(
+      context: context,
+      emailController: _emailController,
+      passwordController: _passwordController,
+    );
+  }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
-  }
-
-  Future<void> _signIn() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final response = await supabase.auth.signInWithPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-
-      if (mounted) {
-        if (response.user != null) {
-            // Jika login berhasil, StreamBuilder di main.dart akan menangani navigasi ke /home
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Login Berhasil! Mengarahkan...')),
-            );
-        }
-      }
-    } on AuthException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login Gagal: ${e.message}')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Terjadi kesalahan tak terduga.')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
   }
 
   @override
@@ -81,7 +54,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   color: AppTheme.primary,
                 ),
               ),
+
               const SizedBox(height: 50),
+
               TextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
@@ -93,7 +68,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   prefixIcon: const Icon(Icons.email),
                 ),
               ),
+
               const SizedBox(height: 20),
+
               TextField(
                 controller: _passwordController,
                 obscureText: true,
@@ -105,12 +82,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   prefixIcon: const Icon(Icons.lock),
                 ),
               ),
+
               const SizedBox(height: 30),
+
               SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _signIn,
+                  onPressed:
+                      _isLoading ? null : () => controller.signIn(_setLoading),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primary,
                     shape: RoundedRectangleBorder(
@@ -122,20 +102,24 @@ class _LoginScreenState extends State<LoginScreen> {
                       : const Text(
                           'Login',
                           style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                 ),
               ),
+
               const SizedBox(height: 20),
+
               TextButton(
                 onPressed: () {
-                  // Navigasi ke halaman Register
-                  Navigator.of(context).pushNamed('/register');
+                  Navigator.pushReplacementNamed(context, '/register');
                 },
-                child: const Text('Belum punya akun? Daftar di sini',
-                    style: TextStyle(color: AppTheme.primary)),
+                child: const Text(
+                  'Belum punya akun? Daftar di sini',
+                  style: TextStyle(color: AppTheme.primary),
+                ),
               ),
             ],
           ),

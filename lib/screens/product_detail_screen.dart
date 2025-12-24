@@ -18,16 +18,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   // FUNGSI UNTUK MENGHITUNG HARGA BERDASARKAN UKURAN
   double _calculatePrice(String size, double basePrice) {
-    switch (size) {
-      case "S":
-        return basePrice - 1000.0;
-      case "L":
-        return basePrice + 2000.0;
-      case "M":
-      default:
-        return basePrice;
-    }
+    double price = basePrice;
+    if (size == "S") price -= 1000;
+    if (size == "L") price += 2000;
+
+    return price < 0 ? 0 : price;
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -52,17 +49,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               Hero(
                 tag: "product-image-${product.id}",
                 child: ClipRRect(
-                  borderRadius:
-                      const BorderRadius.vertical(bottom: Radius.circular(24)),
-                  child: Image.network(
-                    product.imageUrl,
-                    height: 260,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
+                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
+                  child: product.imageUrl.startsWith("assets/")
+                      ? Image.asset(
+                          product.imageUrl,
+                          height: 260,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        )
+                      : Image.network(
+                          product.imageUrl,
+                          height: 260,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
                 ),
               ),
-
               const SizedBox(height: 20),
 
               Padding(
@@ -76,8 +78,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     Text(product.subtitle,
                         style: const TextStyle(color: Colors.grey)),
                     const SizedBox(height: 10),
-                    Row(
-                      children: const [
+                    const Row(
+                      children: [
                         Icon(Icons.star, color: Colors.amber),
                         SizedBox(width: 6),
                         Text("4.8 (230)", style: TextStyle(color: Colors.grey)),
@@ -176,7 +178,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primary,
-              minimumSize: const Size(double.infinity, 55),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14)),
             ),

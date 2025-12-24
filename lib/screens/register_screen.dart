@@ -1,9 +1,6 @@
-// lib/screens/register_screen.dart
-
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../config/theme.dart';
-import '../../main.dart'; 
+import '../../controllers/register_controller.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -15,60 +12,29 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
+  late RegisterController controller;
   bool _isLoading = false;
+
+  void _setLoading(bool value) {
+    setState(() => _isLoading = value);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    controller = RegisterController(
+      context: context,
+      emailController: _emailController,
+      passwordController: _passwordController,
+    );
+  }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
-  }
-
-  Future<void> _signUp() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final response = await supabase.auth.signUp(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-
-      if (mounted) {
-        if (response.user != null) {
-            // Setelah pendaftaran, kembali ke halaman login
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text(
-                      'Pendaftaran Berhasil! Silakan cek email dan login.')),
-            );
-            Navigator.of(context).pop(); // Kembali ke LoginScreen
-        } else {
-             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Pendaftaran Gagal. Coba lagi.')),
-            );
-        }
-      }
-    } on AuthException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Pendaftaran Gagal: ${e.message}')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Terjadi kesalahan tak terduga.')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
   }
 
   @override
@@ -94,6 +60,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               const SizedBox(height: 50),
+
               TextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
@@ -105,7 +72,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   prefixIcon: const Icon(Icons.email),
                 ),
               ),
+
               const SizedBox(height: 20),
+
               TextField(
                 controller: _passwordController,
                 obscureText: true,
@@ -117,12 +86,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   prefixIcon: const Icon(Icons.lock),
                 ),
               ),
+
               const SizedBox(height: 30),
+
               SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _signUp,
+                  onPressed:
+                      _isLoading ? null : () => controller.signUp(_setLoading),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primary,
                     shape: RoundedRectangleBorder(
@@ -134,20 +106,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       : const Text(
                           'Daftar',
                           style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                 ),
               ),
+
               const SizedBox(height: 20),
+
               TextButton(
-                onPressed: () {
-                   // Kembali ke LoginScreen
-                   Navigator.of(context).pop(); 
-                },
-                child: const Text('Sudah punya akun? Login di sini',
-                    style: TextStyle(color: AppTheme.primary)),
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text(
+                  'Sudah punya akun? Login di sini',
+                  style: TextStyle(color: AppTheme.primary),
+                ),
               ),
             ],
           ),

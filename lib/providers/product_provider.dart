@@ -13,7 +13,7 @@ class ProductProvider with ChangeNotifier {
     try {
       products = await ProductService.getProducts();
     } catch (e) {
-      print("Error loading products: $e");
+      debugPrint("Error loading products: $e");
     }
 
     isLoading = false;

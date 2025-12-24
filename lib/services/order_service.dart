@@ -6,7 +6,7 @@ import '../models/cart_item.dart';
 class OrderService {
   
   // KONTROL DEBUGGING: ATUR KE TRUE UNTUK SIMULASI KEGAGALAN
-  static bool _forceFailure = false; 
+  static const bool _forceFailure = false; 
 
   static Future<bool> sendOrder({
     required String tableId,
@@ -41,19 +41,11 @@ class OrderService {
       );
 
       // 3. Kirim data ke tabel 'orders' di Supabase
-      final response = await client
-          .from('orders') 
-          .insert({
-              'table_id': tableId, // Menggunakan ID 'CASHIER-ORDER'
-              'total': totalAmount,
-              'items_jsonb': itemsPayload, 
-          });
-      
-      // 4. Periksa respons dari Supabase
-      if (response == null || response.error != null) {
-          debugPrint("Supabase Insert Error: ${response.error?.message}");
-          return false;
-      }
+      await client.from('orders').insert({
+        'table_id': tableId,
+        'total': totalAmount,
+        'items_jsonb': itemsPayload,
+      });
       
       debugPrint("ORDER SENT SUCCESSFULLY to Supabase: Table $tableId, Total $totalAmount");
       

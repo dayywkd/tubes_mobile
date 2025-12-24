@@ -21,16 +21,16 @@ import 'screens/login_screen.dart';
 import 'screens/register_screen.dart'; 
 import 'screens/profile_screen.dart'; 
 
-// --- GANTI DENGAN URL & KEY SUPABASE ANDA ---
-const SUPABASE_URL = "https://bncbmzbgncxmlpqgsxqb.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuY2JtemJnbmN4bWxwcWdzeHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzNTU4NDksImV4cCI6MjA4MDkzMTg0OX0.iZ4EK-6z1Ss3FX305mZIRHNX-FyILISoNIbvhntNWxI";
+// --- SUPABASE KEY ---
+const supabaseUrl = "https://bncbmzbgncxmlpqgsxqb.supabase.co";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuY2JtemJnbmN4bWxwcWdzeHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzNTU4NDksImV4cCI6MjA4MDkzMTg0OX0.iZ4EK-6z1Ss3FX305mZIRHNX-FyILISoNIbvhntNWxI";
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Supabase.initialize(
-    url: SUPABASE_URL,
-    anonKey: SUPABASE_ANON_KEY,
+    url: supabaseUrl,
+    anonKey: supabaseAnonKey,
   );
 
   runApp(

@@ -5,7 +5,6 @@ import '../config/theme.dart';
 import '../providers/cart_provider.dart';
 import '../services/order_service.dart';
 import 'package:toko_kopi_sembilan/screens/payment_succes_screen.dart';
-// import 'qr_scan_screen.dart'; // Tidak diperlukan lagi
 
 class OrderScreen extends StatefulWidget {
   const OrderScreen({super.key});
@@ -15,27 +14,27 @@ class OrderScreen extends StatefulWidget {
 }
 
 class _OrderScreenState extends State<OrderScreen> {
-  
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context);
 
     // Redirect jika keranjang kosong
     if (cart.items.isEmpty) {
-      if (mounted) {
-        // Logika pengalihan yang lebih aman dan langsung
-        Future.microtask(() => Navigator.pop(context));
-      }
-      // Tampilan placeholder untuk mencegah error saat pengalihan terjadi
-      return const Scaffold(body: Center(child: Text("Keranjang kosong. Mengarahkan...")));
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Navigator.pop(context);
+      });
+
+      return const Scaffold(
+        body: Center(child: Text("Keranjang kosong. Mengarahkan...")),
+      );
     }
-    
+
+
     // Perhitungan Ringkasan
     final totalHarga = cart.total;
     final tax = totalHarga * 0.1;
     const discount = 5000.0;
     final totalBayar = totalHarga + tax - discount;
-
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F5F2),
@@ -47,7 +46,7 @@ class _OrderScreenState extends State<OrderScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          "Konfirmasi Pesanan", 
+          "Konfirmasi Pesanan",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -67,11 +66,19 @@ class _OrderScreenState extends State<OrderScreen> {
             // ---------- TOP BUTTONS ----------
             Row(
               children: [
-                _topButton(icon: Icons.edit, label: "Edit Order", onTap: () => Navigator.pop(context)),
+                _topButton(
+                    icon: Icons.edit,
+                    label: "Edit Order",
+                    onTap: () => Navigator.pop(context)),
                 const SizedBox(width: 12),
-                _topButton(icon: Icons.note_add_outlined, label: "Add Note", onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Fitur Tambah Catatan belum diimplementasikan")));
-                }),
+                _topButton(
+                    icon: Icons.note_add_outlined,
+                    label: "Add Note",
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text(
+                              "Fitur Tambah Catatan belum diimplementasikan")));
+                    }),
               ],
             ),
 
@@ -98,7 +105,9 @@ class _OrderScreenState extends State<OrderScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
+                boxShadow: const [
+                  BoxShadow(color: Colors.black12, blurRadius: 4)
+                ],
               ),
               child: Row(
                 children: [
@@ -132,7 +141,7 @@ class _OrderScreenState extends State<OrderScreen> {
             _summaryRow("Diskon", -discount.toInt(), isDiscount: true),
 
             const Divider(height: 20),
-            
+
             _summaryRow("Total Pembayaran", totalBayar.toInt(), isTotal: true),
 
             const SizedBox(height: 20),
@@ -143,26 +152,28 @@ class _OrderScreenState extends State<OrderScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
+                boxShadow: const [
+                  BoxShadow(color: Colors.black12, blurRadius: 4)
+                ],
               ),
-              child: Row(
+              child: const Row(
                 children: [
-                  const Icon(Icons.payments_outlined,
-                      color: AppTheme.primary),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text("Metode Pembayaran",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 15)),
-                      Text(
-                        "Bayar di Kasir (Tunai / Dompet Digital)",
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    ],
+                  Icon(Icons.payments_outlined, color: AppTheme.primary),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Metode Pembayaran",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 15)),
+                        Text(
+                          "Bayar di Kasir (Tunai / Dompet Digital)",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ],
+                    ),
                   ),
-                  const Spacer(),
                 ],
               ),
             ),
@@ -176,35 +187,40 @@ class _OrderScreenState extends State<OrderScreen> {
               child: ElevatedButton(
                 // Tombol selalu aktif
                 onPressed: () async {
-                  
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Mengirim pesanan...")),
                   );
-                  
+
                   final success = await OrderService.sendOrder(
                     tableId: "CASHIER-ORDER",
                     items: cart.items,
                   );
 
                   if (success) {
-                    
                     // TAMPILKAN POP-UP NOTIFIKASI SUKSES
+                    if (!context.mounted) return;
                     await showDialog(
                       context: context,
-                      barrierDismissible: false, 
-                      builder: (context) => AlertDialog(
+                      barrierDismissible: false,
+                      builder: (dialogCtx) => AlertDialog(
                         title: const Text("Pesanan Terkirim!"),
-                        content: const Text("Pesanan Anda telah berhasil dicatat. Lanjutkan ke proses pembayaran di kasir."),
+                        content: const Text(
+                          "Pesanan Anda telah berhasil dicatat. Lanjutkan ke proses pembayaran di kasir.",
+                        ),
                         actions: [
                           TextButton(
-                            onPressed: () => Navigator.pop(context), 
-                            child: const Text("OK", style: TextStyle(color: AppTheme.primary)),
+                            onPressed: () => Navigator.pop(dialogCtx),
+                            child: const Text(
+                              "OK",
+                              style: TextStyle(color: AppTheme.primary),
+                            ),
                           ),
                         ],
                       ),
                     );
-                    
+
                     // Navigasi ke layar sukses
+                    if (!context.mounted) return;
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
@@ -214,36 +230,41 @@ class _OrderScreenState extends State<OrderScreen> {
                     cart.clear();
                   } else {
                     // TAMPILKAN POP-UP NOTIFIKASI GAGAL
+                    if (!context.mounted) return;
                     await showDialog(
-                        context: context,
-                        barrierDismissible: true,
-                        builder: (context) => AlertDialog(
-                          title: Row(
-                            children: const [
-                              Icon(Icons.error_outline, color: Colors.red),
-                              SizedBox(width: 8),
-                              Text("Pengiriman Gagal!"),
-                            ],
-                          ),
-                          content: const Text(
-                            "Pesanan gagal dikirim. Silakan periksa koneksi atau coba lagi.",
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text("TUTUP", style: TextStyle(color: Colors.red)),
-                            ),
+                      context: context,
+                      barrierDismissible: true,
+                      builder: (context) => AlertDialog(
+                        title: const Row(
+                          children: [
+                            Icon(Icons.error_outline, color: Colors.red),
+                            SizedBox(width: 8),
+                            Expanded(child: Text("Pengiriman Gagal!")),
                           ],
                         ),
-                      );
+                        content: const Text(
+                          "Pesanan gagal dikirim. Silakan periksa koneksi atau coba lagi.",
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text("TUTUP",
+                                style: TextStyle(color: Colors.red)),
+                          ),
+                        ],
+                      ),
+                    );
 
+                    if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Gagal mengirim pesanan. Silakan coba lagi.")),
+                      const SnackBar(
+                          content: Text(
+                              "Gagal mengirim pesanan. Silakan coba lagi.")),
                     );
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary, 
+                  backgroundColor: AppTheme.primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -267,7 +288,7 @@ class _OrderScreenState extends State<OrderScreen> {
   }
 
   // ================= WIDGETS =================
-  
+
   // Widget Info Box Kasir (Pengganti _tableIdSection)
   Widget _cashierInfoBox(BuildContext context) {
     return Container(
@@ -278,15 +299,17 @@ class _OrderScreenState extends State<OrderScreen> {
         border: Border.all(color: AppTheme.primary),
         boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
       ),
-      child: Row(
-        children: const [
+      child: const Row(
+        children: [
           Icon(Icons.point_of_sale, color: AppTheme.primary),
           SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Mode Pemesanan", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                Text("Mode Pemesanan",
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                 Text(
                   "Pesanan dicatat di Kasir. ID Pesanan: CASHIER-ORDER",
                   style: TextStyle(color: Colors.black54, fontSize: 13),
@@ -299,8 +322,10 @@ class _OrderScreenState extends State<OrderScreen> {
     );
   }
 
-
-  Widget _topButton({required IconData icon, required String label, required Function() onTap}) {
+  Widget _topButton(
+      {required IconData icon,
+      required String label,
+      required Function() onTap}) {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -319,8 +344,8 @@ class _OrderScreenState extends State<OrderScreen> {
               Icon(icon, size: 20, color: Colors.black87),
               const SizedBox(width: 6),
               Text(label,
-                  style:
-                      const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w500)),
             ],
           ),
         ),
@@ -371,16 +396,16 @@ class _OrderScreenState extends State<OrderScreen> {
                     style: const TextStyle(
                         fontWeight: FontWeight.bold, fontSize: 16)),
                 // Menggunakan item.price (harga unit yang disesuaikan)
-                Text("Size: ${item.size} - IDR ${item.price.toInt()}", 
+                Text("Size: ${item.size} - IDR ${item.price.toInt()}",
                     style: const TextStyle(color: Colors.grey, fontSize: 13)),
               ],
             ),
           ),
-          
+
           // Total price for item
           // Menggunakan item.price
           Text(
-            "IDR ${(item.price * item.qty).toInt()}", 
+            "IDR ${(item.price * item.qty).toInt()}",
             style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: AppTheme.primary,
@@ -391,8 +416,8 @@ class _OrderScreenState extends State<OrderScreen> {
     );
   }
 
-
-  Widget _summaryRow(String label, int value, {bool isDiscount = false, bool isTotal = false}) {
+  Widget _summaryRow(String label, int value,
+      {bool isDiscount = false, bool isTotal = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -400,16 +425,17 @@ class _OrderScreenState extends State<OrderScreen> {
         children: [
           Text(label,
               style: TextStyle(
-                fontSize: isTotal ? 16 : 15, 
-                color: isTotal ? Colors.black : Colors.black54,
-                fontWeight: isTotal ? FontWeight.bold : FontWeight.normal
-              )),
+                  fontSize: isTotal ? 16 : 15,
+                  color: isTotal ? Colors.black : Colors.black54,
+                  fontWeight: isTotal ? FontWeight.bold : FontWeight.normal)),
           Text(
             "IDR $value",
             style: TextStyle(
                 fontSize: isTotal ? 17 : 15,
                 fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
-                color: isTotal ? AppTheme.primary : (isDiscount ? Colors.green.shade600 : Colors.black87)),
+                color: isTotal
+                    ? AppTheme.primary
+                    : (isDiscount ? Colors.green.shade600 : Colors.black87)),
           ),
         ],
       ),

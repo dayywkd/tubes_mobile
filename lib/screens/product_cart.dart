@@ -1,4 +1,3 @@
-// lib/screens/product_cart.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/product.dart';
@@ -10,11 +9,25 @@ class ProductCard extends StatelessWidget {
   final Product product;
   const ProductCard({super.key, required this.product});
 
+  void _addToCart(BuildContext context) {
+    context.read<CartProvider>().add(
+      product,
+      size: "M",
+      calculatedPrice: product.price,
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("${product.name} added to cart"),
+        duration: const Duration(seconds: 1),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final cart = Provider.of<CartProvider>(context, listen: false);
-
-    return GestureDetector(
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
       onTap: () {
         Navigator.push(
           context,
@@ -29,9 +42,10 @@ class ProductCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-                color: Colors.black12.withOpacity(0.08),
-                blurRadius: 6,
-                offset: const Offset(0, 2)),
+              color: Colors.black12.withValues(alpha: 0.08),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
           ],
         ),
         child: Column(
@@ -40,8 +54,9 @@ class ProductCard extends StatelessWidget {
             Hero(
               tag: "product-image-${product.id}",
               child: ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
                 child: product.imageUrl.startsWith("assets/")
                     ? Image.asset(
                         product.imageUrl,
@@ -58,7 +73,6 @@ class ProductCard extends StatelessWidget {
               ),
             ),
 
-            // CONTENT
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               child: Column(
@@ -69,31 +83,24 @@ class ProductCard extends StatelessWidget {
                           fontWeight: FontWeight.bold, fontSize: 15)),
                   const SizedBox(height: 4),
                   Text(product.subtitle,
-                      style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                      style:
+                          const TextStyle(color: Colors.grey, fontSize: 12)),
                   const SizedBox(height: 6),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         "IDR ${product.price.toInt()}",
                         style: const TextStyle(
-                            color: AppTheme.primary,
-                            fontWeight: FontWeight.bold),
+                          color: AppTheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      GestureDetector(
-                        onTap: () {
-                          // PERBAIKAN: Menyediakan calculatedPrice
-                          cart.add(
-                            product, 
-                            size: "M",
-                            calculatedPrice: product.price // Menggunakan harga dasar untuk ukuran 'M'
-                          );
 
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text("${product.name} added to cart"),
-                            duration: const Duration(seconds: 1),
-                          ));
-                        },
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => _addToCart(context),
                         child: const CircleAvatar(
                           radius: 16,
                           backgroundColor: AppTheme.primary,

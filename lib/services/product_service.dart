@@ -1,4 +1,5 @@
 // lib/services/product_service.dart
+import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/product.dart';
 
@@ -7,7 +8,7 @@ class ProductService {
     try {
       final client = Supabase.instance.client;
 
-      print("🔄 Fetching products from Supabase...");
+      debugPrint("🔄 Fetching products from Supabase...");
 
       // Supabase Flutter 2.x: select() langsung return List<dynamic>
       final data = await client
@@ -15,13 +16,13 @@ class ProductService {
           .select()
           .order('name', ascending: true);
 
-      print("✅ Products fetched successfully: ${data.length} items");
+      debugPrint("✅ Products fetched successfully: ${data.length} items");
 
       return data.map((item) {
         return Product.fromJson(Map<String, dynamic>.from(item));
       }).toList();
     } catch (e) {
-      print("❌ ERROR fetching products: $e");
+      debugPrint("❌ ERROR fetching products: $e");
       return []; // fallback agar UI tidak crash
     }
   }

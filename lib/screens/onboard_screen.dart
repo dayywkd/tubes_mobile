@@ -22,7 +22,7 @@ class OnboardScreen extends StatelessWidget {
 
           // Dark Overlay
           Container(
-            color: Colors.black.withOpacity(0.6),
+            color: Colors.black.withValues(alpha: 0.6),
           ),
 
           // Content
@@ -57,7 +57,7 @@ class OnboardScreen extends StatelessWidget {
                   onPressed: () {
                     // --- PERINTAH NAVIGASI UTAMA ---
                     // Mengganti halaman saat ini (Onboard) dengan HomeScreen (/home)
-                    Navigator.pushReplacementNamed(context, '/home');
+                    Navigator.pushReplacementNamed(context, '/register');
                     // --------------------------------
                   },
                   style: ElevatedButton.styleFrom(
@@ -82,9 +82,9 @@ class OnboardScreen extends StatelessWidget {
                 TextButton(
                   onPressed: () {
                     // Asumsi: Tombol Sign In juga mengarah ke Home setelah sukses
-                    Navigator.pushReplacementNamed(context, '/home');
+                    Navigator.pushReplacementNamed(context, '/login');
                   },
-                  child: Text(
+                  child: const Text(
                     "Sign In",
                     style: TextStyle(
                       color: AppTheme.primary,

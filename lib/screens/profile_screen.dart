@@ -1,7 +1,6 @@
 // lib/screens/profile_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/theme.dart';
 import '../main.dart'; 
 
@@ -9,27 +8,24 @@ class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
  Future<void> _signOut(BuildContext context) async {
-  try {
-    // 1. Lakukan Logout di Supabase
-    await supabase.auth.signOut();
-    
-    if (context.mounted) {
-      // 2. NAVIGASI PAKSA KE HALAMAN LOGIN
-      // pushNamedAndRemoveUntil menghapus semua history halaman (tidak bisa di-back)
+    try {
+      await supabase.auth.signOut();
+
+      if (!context.mounted) return;
+
       Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Logout Berhasil!')),
       );
-    }
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Terjadi kesalahan tak terduga.')),
-        );
-      }
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Terjadi kesalahan tak terduga.')),
+      );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
