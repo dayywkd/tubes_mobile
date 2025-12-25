@@ -1,4 +1,3 @@
-// lib/widgets/bottom_nav.dart
 import 'package:flutter/material.dart';
 import '../config/theme.dart';
 
@@ -28,13 +27,13 @@ class BottomNav extends StatelessWidget {
           ),
         ],
       ),
-
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _navItem(Icons.home, 0),
-          _navItem(Icons.person_outline, 1), // Profile
-          _navItem(Icons.shopping_cart_outlined, 2), // Cart
+          _navItem(Icons.person_outline, 1),
+          _navItem(Icons.shopping_cart_outlined, 2),
+          _navItem(Icons.receipt_long_outlined, 3), // 👈 Purchase History
         ],
       ),
     );

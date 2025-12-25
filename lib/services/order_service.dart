@@ -4,23 +4,22 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/cart_item.dart';
 
 class OrderService {
-  
   // KONTROL DEBUGGING: ATUR KE TRUE UNTUK SIMULASI KEGAGALAN
-  static const bool _forceFailure = false; 
+  static const bool _forceFailure = false;
 
   static Future<bool> sendOrder({
     required String tableId,
     required List<CartItem> items,
   }) async {
     try {
-      
       // LOGIKA DEBUGGING: Simulasikan kegagalan jika diaktifkan
       if (_forceFailure) {
-        debugPrint("SIMULASI: Pengiriman pesanan GAGAL (karena _forceFailure=true)");
-        await Future.delayed(const Duration(seconds: 1)); 
-        return false; 
+        debugPrint(
+            "SIMULASI: Pengiriman pesanan GAGAL (karena _forceFailure=true)");
+        await Future.delayed(const Duration(seconds: 1));
+        return false;
       }
-      
+
       final client = Supabase.instance.client;
 
       // 1. Persiapan data item untuk disimpan di kolom 'items_jsonb'
@@ -46,14 +45,32 @@ class OrderService {
         'total': totalAmount,
         'items_jsonb': itemsPayload,
       });
-      
-      debugPrint("ORDER SENT SUCCESSFULLY to Supabase: Table $tableId, Total $totalAmount");
-      
-      return true;
 
+      debugPrint(
+          "ORDER SENT SUCCESSFULLY to Supabase: Table $tableId, Total $totalAmount");
+
+      return true;
     } catch (e) {
       debugPrint("Order error: $e");
       return false;
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getOrders() async {
+    try {
+      final client = Supabase.instance.client;
+
+      final response = await client
+          .from('orders')
+          .select()
+          .order('created_at', ascending: false)
+          .limit(20);
+
+      // Ensure list format
+      return (response as List).map((e) => e as Map<String, dynamic>).toList();
+    } catch (e) {
+      debugPrint("Fetch Orders Failed: $e");
+      return [];
     }
   }
 }

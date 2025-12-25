@@ -14,7 +14,6 @@ class CartScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F2EE),
-
       appBar: AppBar(
         actions: [
           if (cart.items.isNotEmpty)
@@ -32,7 +31,6 @@ class CartScreen extends StatelessWidget {
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
-
       body: Column(
         children: [
           Expanded(
@@ -40,9 +38,7 @@ class CartScreen extends StatelessWidget {
                 ? _emptyCart(context, controller)
                 : _cartList(cart, controller),
           ),
-
-          if (cart.items.isNotEmpty)
-            _totalSection(cart, controller)
+          if (cart.items.isNotEmpty) _totalSection(cart, controller)
         ],
       ),
     );
@@ -57,7 +53,8 @@ class CartScreen extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.shopping_cart_outlined, size: 80, color: Colors.grey),
+          const Icon(Icons.shopping_cart_outlined,
+              size: 80, color: Colors.grey),
           const SizedBox(height: 16),
           const Text("Keranjang Anda kosong",
               style: TextStyle(fontSize: 18, color: Colors.grey)),
@@ -65,8 +62,8 @@ class CartScreen extends StatelessWidget {
           ElevatedButton(
             onPressed: controller.goBack,
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary),
-            child:
-                const Text("Mulai Memesan", style: TextStyle(color: Colors.white)),
+            child: const Text("Mulai Memesan",
+                style: TextStyle(color: Colors.white)),
           )
         ],
       ),
@@ -97,16 +94,27 @@ class CartScreen extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  item.product.imageUrl,
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
-                ),
+                child: item.product.imageUrl.startsWith("assets/")
+                    ? Image.asset(
+                        item.product.imageUrl,
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                      )
+                    : Image.network(
+                        item.product.imageUrl,
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                        errorBuilder: (c, e, st) => Container(
+                          width: 60,
+                          height: 60,
+                          color: Colors.grey.shade200,
+                          child: const Icon(Icons.broken_image, size: 20),
+                        ),
+                      ),
               ),
-
               const SizedBox(width: 12),
-
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,7 +132,6 @@ class CartScreen extends StatelessWidget {
                   ],
                 ),
               ),
-
               Row(
                 children: [
                   GestureDetector(
@@ -155,7 +162,8 @@ class CartScreen extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         boxShadow: [
-          BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -2)),
+          BoxShadow(
+              color: Colors.black12, blurRadius: 10, offset: Offset(0, -2)),
         ],
       ),
       child: Column(
@@ -175,7 +183,6 @@ class CartScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 15),
-
           SizedBox(
             width: double.infinity,
             height: 55,
@@ -189,7 +196,9 @@ class CartScreen extends StatelessWidget {
               child: const Text(
                 "Lanjutkan Pemesanan",
                 style: TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
               ),
             ),
           ),

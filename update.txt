@@ -1,1 +1,0 @@
-- Splash sekarang mengarah ke sing in dan sign up (awalnya mengarah langsung ke home)

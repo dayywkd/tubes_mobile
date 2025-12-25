@@ -32,7 +32,7 @@ class ProfileScreen extends StatelessWidget {
     // Mendapatkan data pengguna saat ini
     final user = supabase.auth.currentUser;
     final email = user?.email ?? 'Tidak Ditemukan';
-    final userId = user?.id ?? 'Tidak Ditemukan';
+    //final userId = user?.id ?? 'Tidak Ditemukan';
 
     return Scaffold(
       appBar: AppBar(
@@ -63,15 +63,6 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               // Menampilkan User ID
-              Card(
-                elevation: 2,
-                margin: const EdgeInsets.symmetric(vertical: 8),
-                child: ListTile(
-                  leading: const Icon(Icons.vpn_key, color: AppTheme.primary),
-                  title: const Text('User ID (Supabase)'),
-                  subtitle: Text(userId),
-                ),
-              ),
               const Spacer(), // Dorong tombol ke bawah
               SizedBox(
                 width: double.infinity,

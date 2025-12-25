@@ -17,16 +17,25 @@ import 'screens/order_screen.dart';
 import 'screens/payment_succes_screen.dart';
 
 // Screens Auth (Pastikan file ini ada di folder screens/auth/ atau sesuaikan)
-import 'screens/login_screen.dart'; 
-import 'screens/register_screen.dart'; 
-import 'screens/profile_screen.dart'; 
+import 'screens/login_screen.dart';
+import 'screens/register_screen.dart';
+import 'screens/profile_screen.dart';
+
+import 'package:hive_flutter/hive_flutter.dart';
+import 'models/product.dart';
 
 // --- SUPABASE KEY ---
 const supabaseUrl = "https://bncbmzbgncxmlpqgsxqb.supabase.co";
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuY2JtemJnbmN4bWxwcWdzeHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzNTU4NDksImV4cCI6MjA4MDkzMTg0OX0.iZ4EK-6z1Ss3FX305mZIRHNX-FyILISoNIbvhntNWxI";
+const supabaseAnonKey =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuY2JtemJnbmN4bWxwcWdzeHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzNTU4NDksImV4cCI6MjA4MDkzMTg0OX0.iZ4EK-6z1Ss3FX305mZIRHNX-FyILISoNIbvhntNWxI";
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Hive.initFlutter();
+
+  Hive.registerAdapter(ProductAdapter());
+  await Hive.openBox<Product>('productsBox');
 
   await Supabase.initialize(
     url: supabaseUrl,
@@ -55,16 +64,16 @@ class TokoKopiSembilan extends StatelessWidget {
       title: "Toko Kopi Sembilan",
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      
+
       // KITA MULAI DARI SPLASH SCREEN
       // Biarkan Splash Screen yang mengecek apakah user sudah login atau belum
-      initialRoute: '/splash', 
+      initialRoute: '/splash',
 
       routes: {
         // Alur Awal
         '/splash': (context) => const SplashScreen(),
         '/onboard': (context) => const OnboardScreen(),
-        
+
         // Auth
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),

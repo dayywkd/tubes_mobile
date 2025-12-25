@@ -9,6 +9,7 @@ import '../widgets/bottom_nav.dart';
 import '../controllers/home_controller.dart';
 import 'profile_screen.dart';
 import 'cart_screen.dart';
+import 'purchase_history_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -39,18 +40,17 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F2EE),
-
       bottomNavigationBar: BottomNav(
         currentIndex: currentIndex,
         onTap: (i) => setState(() => currentIndex = i),
       ),
-
       body: IndexedStack(
         index: currentIndex,
         children: [
           _homeTab(),
           _profileTab(),
           _cartTab(),
+          const PurchaseHistoryScreen(),
         ],
       ),
     );
@@ -67,7 +67,6 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           _buildTopSection(controller),
           const SizedBox(height: 20),
-
           Expanded(
             child: SingleChildScrollView(
               child: Column(
@@ -76,14 +75,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 16),
                   _buildCategoryChips(),
                   const SizedBox(height: 12),
-
                   SizedBox(
                     height: 500,
                     child: productProvider.isLoading
                         ? _buildSkeletonGrid()
                         : _buildProductGrid(productProvider),
                   ),
-
                   const SizedBox(height: 80),
                 ],
               ),
@@ -97,12 +94,12 @@ class _HomeScreenState extends State<HomeScreen> {
   // ============================
   // PROFILE TAB
   // ============================
-Widget _profileTab() => const ProfileScreen();
+  Widget _profileTab() => const ProfileScreen();
 
   // ============================
   // CART TAB
   // ============================
-Widget _cartTab() => const CartScreen();
+  Widget _cartTab() => const CartScreen();
 
   // ============================
   // TOP SECTION
@@ -120,7 +117,6 @@ Widget _cartTab() => const CartScreen();
             ),
           ),
         ),
-
         Container(
           height: 180,
           width: double.infinity,
@@ -135,7 +131,6 @@ Widget _cartTab() => const CartScreen();
             ),
           ),
         ),
-
         SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -147,7 +142,6 @@ Widget _cartTab() => const CartScreen();
                     const Icon(Icons.location_on,
                         color: Colors.white, size: 22),
                     const SizedBox(width: 6),
-
                     Expanded(
                       child: Text(
                         controller.currentLocation,
@@ -162,9 +156,7 @@ Widget _cartTab() => const CartScreen();
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 12),
-
                 const Text(
                   "Find your best coffee",
                   style: TextStyle(
@@ -194,7 +186,6 @@ Widget _cartTab() => const CartScreen();
           borderRadius: BorderRadius.circular(20),
         ),
         padding: const EdgeInsets.all(20),
-
         child: const Row(
           children: [
             Expanded(
@@ -237,8 +228,7 @@ Widget _cartTab() => const CartScreen();
               labelStyle: TextStyle(
                 color: isSelected ? Colors.white : Colors.black,
               ),
-              onSelected: (_) =>
-                  controller.onCategorySelected(item, refresh),
+              onSelected: (_) => controller.onCategorySelected(item, refresh),
             ),
           );
         },
@@ -266,13 +256,11 @@ Widget _cartTab() => const CartScreen();
 
   Widget _buildProductGrid(ProductProvider productProvider) {
     final filtered = productProvider.products.where((p) {
-      final matchesCategory =
-          controller.selectedCategory == "All Coffee" ||
-              p.category == controller.selectedCategory;
+      final matchesCategory = controller.selectedCategory == "All Coffee" ||
+          p.category == controller.selectedCategory;
 
-      final matchesSearch =
-          controller.searchQuery.isEmpty ||
-              p.name.toLowerCase().contains(controller.searchQuery);
+      final matchesSearch = controller.searchQuery.isEmpty ||
+          p.name.toLowerCase().contains(controller.searchQuery);
 
       return matchesCategory && matchesSearch;
     }).toList();

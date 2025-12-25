@@ -44,16 +44,21 @@ class ProductCard extends StatelessWidget {
                     const BorderRadius.vertical(top: Radius.circular(16)),
                 child: product.imageUrl.startsWith("assets/")
                     ? Image.asset(
-                        product.imageUrl, // Menggunakan Image.asset untuk path lokal
-                        height: 130,
+                        product.imageUrl,
+                        height: 110,
                         width: double.infinity,
                         fit: BoxFit.cover,
                       )
                     : Image.network(
-                        product.imageUrl, // Menggunakan Image.network untuk URL
-                        height: 130,
+                        product.imageUrl,
+                        height: 110,
                         width: double.infinity,
                         fit: BoxFit.cover,
+                        errorBuilder: (c, e, st) => Container(
+                          height: 110,
+                          color: Colors.grey.shade200,
+                          child: const Icon(Icons.broken_image, size: 36),
+                        ),
                       ),
               ),
             ),
@@ -65,10 +70,14 @@ class ProductCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(product.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 15)),
                   const SizedBox(height: 4),
                   Text(product.subtitle,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(color: Colors.grey, fontSize: 12)),
                   const SizedBox(height: 6),
                   Row(
@@ -83,15 +92,14 @@ class ProductCard extends StatelessWidget {
                       GestureDetector(
                         onTap: () {
                           // Logika TAMBAH KE KERANJANG
-                          cart.add(
-                            product, 
-                            size: "M",
-                            // PERBAIKAN: Menyediakan calculatedPrice = harga dasar (untuk ukuran M)
-                            calculatedPrice: product.price 
-                          );
+                          cart.add(product,
+                              size: "M",
+                              // PERBAIKAN: Menyediakan calculatedPrice = harga dasar (untuk ukuran M)
+                              calculatedPrice: product.price);
 
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text("${product.name} ditambahkan ke keranjang"),
+                            content: Text(
+                                "${product.name} ditambahkan ke keranjang"),
                             duration: const Duration(seconds: 1),
                           ));
                         },

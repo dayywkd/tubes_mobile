@@ -6,15 +6,17 @@ class CartProvider extends ChangeNotifier {
   List<CartItem> items = [];
 
   // Mengubah signature: kini menerima calculatedPrice
-  void add(Product product, {required double calculatedPrice, String size = "M"}) { 
+  void add(Product product,
+      {required double calculatedPrice, String size = "M"}) {
     // Mencari item yang sama berdasarkan product ID DAN ukuran (size)
-    final index = items.indexWhere((it) => it.product.id == product.id && it.size == size);
+    final index = items
+        .indexWhere((it) => it.product.id == product.id && it.size == size);
 
     if (index >= 0) {
       items[index].qty++;
     } else {
       items.add(CartItem(
-        product: product, 
+        product: product,
         size: size,
         price: calculatedPrice, // Gunakan harga yang dihitung
       ));
@@ -29,8 +31,7 @@ class CartProvider extends ChangeNotifier {
   }
 
   // Mengubah perhitungan total: menggunakan item.price
-  double get total =>
-      items.fold(0, (sum, it) => sum + it.price * it.qty); 
+  double get total => items.fold(0, (sum, it) => sum + it.price * it.qty);
 
   void clear() {
     items.clear();

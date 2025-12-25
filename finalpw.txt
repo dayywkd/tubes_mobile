@@ -1,0 +1,24 @@
+PS C:\Users\USER\Documents\Informatika - Semester 5\Pemrograman Mobile 5D\uap_mobile\tubes_mobile> keytool -genkey -v -keystore tokokopi.jks  -keyalg RSA -keysize 2048 -validity 10000 -alias tokokopi
+Enter keystore password:  
+
+Re-enter new password:
+
+Enter the distinguished name. Provide a single dot (.) to leave a sub-component empty or press ENTER to use the default value in braces.
+What is your first and last name?
+  [Unknown]:  Sabili AK
+What is the name of your organizational unit?
+  [Unknown]:  Infinity
+What is the name of your organization?
+  [Unknown]:  Infinity
+What is the name of your City or Locality?
+  [Unknown]:  Malang
+What is the name of your State or Province?
+  [Unknown]:  Jawa Timur
+What is the two-letter country code for this unit?
+  [Unknown]:  ID
+Is CN=Sabili AK, OU=Infinity, O=Infinity, L=Malang, ST=Jawa Timur, C=ID correct?
+  [no]:  y
+
+Generating 2,048 bit RSA key pair and self-signed certificate (SHA384withRSA) with a validity of 10,000 days
+        for: CN=Sabili AK, OU=Infinity, O=Infinity, L=Malang, ST=Jawa Timur, C=ID
+[Storing tokokopi.jks]

@@ -16,7 +16,7 @@ class HomeController {
     "Latte",
     "Americano",
     "Flat White",
-    "Espresso",
+    "Esspreso",
   ];
 
   String selectedCategory = "All Coffee";
@@ -28,10 +28,7 @@ class HomeController {
 
   /// INITIAL LOAD
   Future<void> init() async {
-    final productProvider =
-        Provider.of<ProductProvider>(context, listen: false);
-
-    productProvider.loadProducts();
+    await Provider.of<ProductProvider>(context, listen: false).loadProducts();
     await determinePosition();
   }
 
@@ -86,8 +83,7 @@ class HomeController {
         if (places.isNotEmpty) {
           final p = places[0];
 
-          String name =
-              "${p.subLocality ?? ''}, ${p.locality ?? ''}".trim();
+          String name = "${p.subLocality ?? ''}, ${p.locality ?? ''}".trim();
 
           if (name == "," || name.isEmpty) {
             name = p.administrativeArea ?? "Lokasi Tidak Diketahui";
